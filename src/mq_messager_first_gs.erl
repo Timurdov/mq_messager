@@ -20,8 +20,9 @@
     handle_cast/2,
     handle_info/2,
     terminate/2,
-    code_change/3,
-    send_message/0]).
+    code_change/3]).
+
+-export([send_message/0]).
 
 -define(SERVER, ?MODULE).
 
@@ -117,9 +118,10 @@ handle_cast(_Request, State) ->
     {stop, Reason :: term(), NewState :: #state{}}).
 
 
-handle_info({{'basic.deliver',_,_,_,?MQ_EXCHANGE, <<"ring">>}, {amqp_msg,_,MsgBinary}}, #state{} = State) ->
+handle_info({{'basic.deliver',_,_,_,?MQ_EXCHANGE, <<"ring">>}, {amqp_msg,_,MsgBinary}}, #state{mqpid= PID} = State) ->
     ?DBG("Response: ~p~n",[MsgBinary]),
-    mq:send(?MQ_EXCHANGE, <<"rong">>, <<"Hello">>),
+%%     mq:send(?MQ_EXCHANGE, <<"rong">>, <<"Hello">>),
+    mq:unsubscribe(PID),
     {noreply, State};
 
 handle_info(_Info, State) ->
