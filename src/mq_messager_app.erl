@@ -11,6 +11,12 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    logger:start(),
+    apputils:ensure_started(crypto),
+    apputils:ensure_started(inets),
+    apputils:ensure_started(ranch),
+    apputils:ensure_started(cowlib),
+    apputils:ensure_started(cowboy),
     apputils:ensure_started(mq),
     mq_messager_sup:start_link().
 

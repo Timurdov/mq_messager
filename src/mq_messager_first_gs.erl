@@ -20,7 +20,8 @@
     handle_cast/2,
     handle_info/2,
     terminate/2,
-    code_change/3]).
+    code_change/3,
+    send_message/0]).
 
 -define(SERVER, ?MODULE).
 
@@ -65,7 +66,6 @@ start_link() ->
 init([]) ->
     mq:declare_exchange(?MQ_EXCHANGE, <<"topic">>),
     {ok, MqPid} = mq:subscribe(?MQ_EXCHANGE, <<"ring">>, self()),
-    send_message(),
     {ok, #state{module = ?MODULE, mqpid = MqPid}}.
 
 
@@ -119,7 +119,7 @@ handle_cast(_Request, State) ->
 
 handle_info({{'basic.deliver',_,_,_,?MQ_EXCHANGE, <<"ring">>}, {amqp_msg,_,MsgBinary}}, #state{} = State) ->
     ?DBG("Response: ~p~n",[MsgBinary]),
-    mq:send(?MQ_EXCHANGE, list_to_binary("rong." ++ safe_node_name()), <<"Hello">>),
+    mq:send(?MQ_EXCHANGE, <<"rong">>, <<"Hello">>),
     {noreply, State};
 
 handle_info(_Info, State) ->
@@ -158,8 +158,5 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-safe_node_name() ->
-    lists:map(fun($.) -> $_; (S) -> S end, atom_to_list(node())).
-
 send_message() ->
-    mq:send(?MQ_EXCHANGE, list_to_binary("rong." ++ safe_node_name()), <<"Hello">>).
+    mq:send(?MQ_EXCHANGE, <<"rong">>, <<"Hello">>).

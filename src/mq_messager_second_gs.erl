@@ -67,7 +67,7 @@ start_link() ->
 
 init([]) ->
     mq:declare_exchange(?MQ_EXCHANGE, <<"topic">>),
-    {ok, MqPid} = mq:subscribe(?MQ_EXCHANGE, <<"rong.*">>, self()),
+    {ok, MqPid} = mq:subscribe(?MQ_EXCHANGE, <<"rong">>, self()),
     {ok, #state{module = ?MODULE, mqpid = MqPid}}.
 
 
@@ -119,8 +119,8 @@ handle_cast(_Request, State) ->
     {stop, Reason :: term(), NewState :: #state{}}).
 
 
-handle_info({{'basic.deliver',_,_,_,?MQ_EXCHANGE, _}, {amqp_msg,_,MsgBinary}}, #state{} = State) ->
-    ?DBG("Request: ~p~n",[binary_to_term(MsgBinary)]),
+handle_info({{'basic.deliver',_,_,_,?MQ_EXCHANGE, <<"rong">>}, {amqp_msg,_,MsgBinary}}, #state{} = State) ->
+    ?DBG("Request: ~p~n",[MsgBinary]),
     mq:send(?MQ_EXCHANGE, <<"ring">>, <<"World">>),
     {noreply, State};
 
